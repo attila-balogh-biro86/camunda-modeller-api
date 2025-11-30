@@ -1,0 +1,27 @@
+{
+  "decisionName": "driver_eligibility",
+  "inputs": [
+    { "label": "Age", "expression": "age", "type": "integer" },
+    { "label": "Has License", "expression": "hasLicense", "type": "boolean" },
+    { "label": "Country", "expression": "country", "type": "string" }
+  ],
+  "outputs": [
+    { "label": "Eligible", "name": "eligible", "type": "boolean" },
+    { "label": "LogAction", "name": "logAction", "type": "string" },
+    { "label": "Explanation", "name": "explanation", "type": "string" }
+  ],
+  "rules": [
+    {
+      "inputEntries": [ "< 18", "true", "\"ES\"" ],
+      "outputEntries": [ "false", "logDebug(\"Driver is minor!\")",  "\"Driver is minor!\""]
+    },
+    {
+      "inputEntries": [ "age > 18 and age < 60", "true", "\"ES\"" ],
+      "outputEntries": [ "true",  "logDebug(\"Driver is fine!\")", "\"Driver can safely drive in ES as adult!\"" ]
+    },
+    {
+      "inputEntries": [ ">= 60", "true", "-" ],
+      "outputEntries": [ "false", "logDebug(\"Driver is too old!\")", "\"Driver is too old to drive regardless its country!\""  ]
+    }
+  ]
+}

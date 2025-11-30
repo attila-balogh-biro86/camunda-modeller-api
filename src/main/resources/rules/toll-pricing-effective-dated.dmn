@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" id="toll_pricing_c7_table" name="Toll Pricing (Decision Table Only)" namespace="http://example.com/toll-pricing/c7/table" exporter="Camunda Modeler" exporterVersion="5.37.0">
+  <inputData id="in_mode" name="mode">
+    <variable id="InformationItem_1o42r9g" name="mode" typeRef="string" />
+  </inputData>
+  <inputData id="in_current" name="currentRatePerMile">
+    <variable id="InformationItem_0tcucg0" name="currentRatePerMile" typeRef="double" />
+  </inputData>
+  <inputData id="in_reqInc" name="requestedIncreasePerMile">
+    <variable id="InformationItem_0vqcm1o" name="requestedIncreasePerMile" typeRef="double" />
+  </inputData>
+  <inputData id="in_minutes" name="minutesSinceLastIncrease">
+    <variable id="InformationItem_1t3xhl8" name="minutesSinceLastIncrease" typeRef="integer" />
+  </inputData>
+  <inputData id="in_maxStep" name="maxIncreasePerStep">
+    <variable id="InformationItem_0uvlh4s" name="maxIncreasePerStep" typeRef="double" />
+  </inputData>
+  <inputData id="in_minInterval" name="minIntervalMinutes">
+    <variable id="InformationItem_1y57sgd" name="minIntervalMinutes" typeRef="integer" />
+  </inputData>
+  <inputData id="in_softCap" name="softCapPerMile">
+    <variable id="InformationItem_00mf6l5" name="softCapPerMile" typeRef="double" />
+  </inputData>
+  <inputData id="in_segCap" name="segmentCap">
+    <variable id="InformationItem_0sk6v0g" name="segmentCap" typeRef="double" />
+  </inputData>
+  <inputData id="in_segLen" name="segmentLengthMiles">
+    <variable id="InformationItem_1m1zh96" name="segmentLengthMiles" typeRef="double" />
+  </inputData>
+  <decision id="NewRatePerMile" name="NewRatePerMile">
+    <variable id="InformationItem_03zp22o" name="NewRatePerMile" typeRef="double" />
+    <informationRequirement id="InformationRequirement_1hp92f7">
+      <requiredInput href="#in_mode" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1kfbkju">
+      <requiredInput href="#in_current" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0ucfmiy">
+      <requiredInput href="#in_reqInc" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1gjfrgh">
+      <requiredInput href="#in_minutes" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0rlz8gg">
+      <requiredInput href="#in_maxStep" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_07sh0pj">
+      <requiredInput href="#in_minInterval" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1aw96ny">
+      <requiredInput href="#in_softCap" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0i75572">
+      <requiredInput href="#in_segCap" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0vc0pgh">
+      <requiredInput href="#in_segLen" />
+    </informationRequirement>
+    <decisionTable id="dt_newrate" hitPolicy="FIRST">
+      <input id="dt_mode">
+        <inputExpression id="dt_mode_expr" typeRef="string">
+          <text>mode</text>
+        </inputExpression>
+      </input>
+      <input id="dt_insideCooldown">
+        <inputExpression id="dt_insideCooldown_expr" typeRef="boolean">
+          <text>minutesSinceLastIncrease &lt; minIntervalMinutes</text>
+        </inputExpression>
+      </input>
+      <input id="dt_aboveStepCap">
+        <inputExpression id="dt_aboveStepCap_expr" typeRef="boolean">
+          <text>requestedIncreasePerMile &gt; maxIncreasePerStep</text>
+        </inputExpression>
+      </input>
+      <output id="dt_out_rate" name="NewRatePerMile" typeRef="double" biodi:width="782" />
+      <rule id="r1_mandatory">
+        <inputEntry id="r1_c1">
+          <text>"Mandatory"</text>
+        </inputEntry>
+        <inputEntry id="r1_c2">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="r1_c3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="r1_o">
+          <text>
+            if (segmentLengthMiles = null or segmentLengthMiles &lt;= 0)
+            then currentRatePerMile + requestedIncreasePerMile
+            else min(currentRatePerMile + requestedIncreasePerMile, segmentCap / segmentLengthMiles)
+          </text>
+        </outputEntry>
+      </rule>
+      <rule id="r2_norm_cool_above">
+        <inputEntry id="r2_c1">
+          <text>"Normal"</text>
+        </inputEntry>
+        <inputEntry id="r2_c2">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="r2_c3">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="r2_o">
+          <text>
+            if (segmentLengthMiles = null or segmentLengthMiles &lt;= 0)
+            then min(currentRatePerMile + maxIncreasePerStep, softCapPerMile)
+            else min(min(currentRatePerMile + maxIncreasePerStep, softCapPerMile), segmentCap / segmentLengthMiles)
+          </text>
+        </outputEntry>
+      </rule>
+      <rule id="r3_norm_cool_ok">
+        <inputEntry id="r3_c1">
+          <text>"Normal"</text>
+        </inputEntry>
+        <inputEntry id="r3_c2">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="r3_c3">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="r3_o">
+          <text>
+            if (segmentLengthMiles = null or segmentLengthMiles &lt;= 0)
+            then min(currentRatePerMile + requestedIncreasePerMile, softCapPerMile)
+            else min(min(currentRatePerMile + requestedIncreasePerMile, softCapPerMile), segmentCap / segmentLengthMiles)
+          </text>
+        </outputEntry>
+      </rule>
+      <rule id="r4_norm_outside">
+        <inputEntry id="r4_c1">
+          <text>"Normal"</text>
+        </inputEntry>
+        <inputEntry id="r4_c2">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="r4_c3">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="r4_o">
+          <text>
+            if (segmentLengthMiles = null or segmentLengthMiles &lt;= 0)
+            then min(currentRatePerMile + requestedIncreasePerMile, softCapPerMile)
+            else min(min(currentRatePerMile + requestedIncreasePerMile, softCapPerMile), segmentCap / segmentLengthMiles)
+          </text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

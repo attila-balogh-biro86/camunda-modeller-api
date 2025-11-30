@@ -1,0 +1,96 @@
+{
+  "decisionName": "automatic_gap_closing",
+  "inputs": [
+    {
+      "label": "input_gantryStatus",
+      "expression": "gantryStatus",
+      "type": "string"
+    },
+    {
+      "label": "input_gapLength",
+      "expression": "gapLength",
+      "type": "number"
+    },
+    {
+      "label": "input_maxGapLength",
+      "expression": "maxGapLength",
+      "type": "number"
+    },
+    {
+      "label": "input_closed_and_within_max_gap_length",
+      "expression": "gantryStatus = \"CLOSED\" and  (gapLength > maxGapLength)",
+      "type": "boolean"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "gap_action",
+      "name": "action",
+      "type": "string"
+    },
+    {
+      "label": "output_rate",
+      "name": "rate",
+      "type": "number"
+    },
+    {
+      "label": "output_description",
+      "name": "description",
+      "type": "string"
+    }
+  ],
+  "rules": [
+    {
+      "inputEntries": [
+        "\"CLOSED\"",
+        "> maxGapLength",
+        "-",
+        "true"
+      ],
+      "outputEntries": [
+        "executeGantryOperation(\"OPEN_GANTRY\")",
+        "0",
+        "\"Open gantry with zero rate\""
+      ]
+    },
+    {
+      "inputEntries": [
+        "\"CLOSED\"",
+        "<= maxGapLength",
+        "-",
+        "false"
+      ],
+      "outputEntries": [
+        "executeGantryOperation(\"CLOSE_GANTRY\")",
+        "null",
+        "\"Keep gantry closed, waiting for next rate\""
+      ]
+    },
+    {
+      "inputEntries": [
+        "\"OPEN\"",
+        "-",
+        "-",
+        ""
+      ],
+      "outputEntries": [
+        "executeGantryOperation(\"OPEN_GANTRY\")",
+        "null",
+        "\"Gantry is open, no auto closing\""
+      ]
+    },
+    {
+      "inputEntries": [
+        "-",
+        "-",
+        "-",
+        ""
+      ],
+      "outputEntries": [
+        "executeGantryOperation(\"OPEN_GANTRY\")",
+        "null",
+        "\"Default safeguard\""
+      ]
+    }
+  ]
+}
